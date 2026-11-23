@@ -26,7 +26,9 @@ export async function api(path, { method = 'GET', body, headers = {} } = {}) {
     const err = await response.json().catch(() => ({}));
     throw new ApiError(response.status, err.code ?? 'ERROR', err.message ?? 'Помилка запиту');
   }
-  return response.status === 204 ? null : response.json();
+  // Деякі успішні відповіді (201/204) приходять без тіла: парсимо JSON лише якщо він є
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
 
 /** Завантаження файлу (звіт, квитанція) із авторизацією: відкриваємо Blob у новій вкладці або зберігаємо. */
@@ -61,5 +63,6 @@ export async function upload(path, formData) {
     const err = await response.json().catch(() => ({}));
     throw new ApiError(response.status, err.code ?? 'ERROR', err.message ?? 'Помилка завантаження');
   }
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
