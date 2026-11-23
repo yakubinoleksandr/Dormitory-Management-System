@@ -21,4 +21,6 @@ public final class InventoryDtos {
 
     public record RoomResponse(Long id, int floor, String roomNumber, String blockName,
                                int capacity, RoomStatus status, long freeBeds) { }
+
+    public record BedResponse(Long id, int bedNumber, boolean occupied) { }
 }
