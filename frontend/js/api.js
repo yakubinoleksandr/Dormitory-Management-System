@@ -28,3 +28,38 @@ export async function api(path, { method = 'GET', body, headers = {} } = {}) {
   }
   return response.status === 204 ? null : response.json();
 }
+
+/** Завантаження файлу (звіт, квитанція) із авторизацією: відкриваємо Blob у новій вкладці або зберігаємо. */
+export async function download(path, filename, { open = false } = {}) {
+  const token = getToken();
+  const response = await fetch(`/api${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new ApiError(response.status, err.code ?? 'ERROR', err.message ?? 'Помилка завантаження');
+  }
+  const url = URL.createObjectURL(await response.blob());
+  if (open) {
+    window.open(url, '_blank');
+  } else {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+/** multipart/form-data (квитанції). */
+export async function upload(path, formData) {
+  const token = getToken();
+  const response = await fetch(`/api${path}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new ApiError(response.status, err.code ?? 'ERROR', err.message ?? 'Помилка завантаження');
+  }
+  return response.json();
+}
