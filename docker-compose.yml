@@ -29,14 +29,41 @@ services:
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
       JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-60}
       RECEIPTS_DIR: /data/receipts
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@localhost}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     volumes:
       - receipts:/data/receipts
+
+  backup:
+    image: postgres:15
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/scripts/backup.sh"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dormitory}
+      POSTGRES_USER: ${POSTGRES_USER:-dormitory}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Europe/Kyiv
+    volumes:
+      - ./backup:/scripts:ro
+      - ./backups:/backups
+      - receipts:/receipts:ro
 
   web:
     image: nginx:1.27
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "80:80"
     volumes:

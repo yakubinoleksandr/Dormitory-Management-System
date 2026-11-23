@@ -1,12 +1,10 @@
 spring:
   application:
     name: dormitory
-  config:
-    import: optional:file:.env[.properties],optional:file:../.env[.properties]
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/${POSTGRES_DB:dormitory}}
-    username: ${DB_USER:${POSTGRES_USER:dormitory}}
-    password: ${DB_PASSWORD:${POSTGRES_PASSWORD:dormitory}}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dormitory}
+    username: ${DB_USER:dormitory}
+    password: ${DB_PASSWORD:dormitory}
   jpa:
     open-in-view: false
     hibernate:
