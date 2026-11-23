@@ -41,6 +41,7 @@ public class InventoryController {
     }
 
     @GetMapping("/{id}/rooms")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_MANAGER')")
     public List<InventoryDtos.RoomResponse> rooms(@PathVariable Long id, @RequestParam(required = false) Integer floor) {
         access.requireCanView(CurrentUser.get(), id);
         return queryService.map(id, floor);
