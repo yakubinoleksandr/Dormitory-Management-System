@@ -11,7 +11,12 @@ public final class AccountDtos {
             @NotBlank @Size(max = 50) String username,
             @NotBlank @Email @Size(max = 100) String email,
             @NotBlank @Size(min = 8, max = 72) String password,
-            @NotBlank String role) { }
+            @NotBlank String role,
+            @Size(max = 150) String fullName,
+            Integer course,
+            @Size(max = 20) String groupName,
+            @Size(max = 20) String phone,
+            String benefitsInfo) { }
 
     public record AccountResponse(Long id, String username, String email, String role) { }
 }
