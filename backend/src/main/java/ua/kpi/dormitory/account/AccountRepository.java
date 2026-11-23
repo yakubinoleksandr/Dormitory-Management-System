@@ -12,6 +12,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByUsername(String username);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    boolean existsByRoleName(String roleName);
 
     /** SELECT ... FOR UPDATE: перше блокування в порядку «акаунт → заява/договір → кімнати» (лаб. 2, п. 6.1). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
