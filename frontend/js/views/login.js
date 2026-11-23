@@ -18,7 +18,7 @@ export async function renderLogin(container) {
     try {
       const session = await api('/auth/login', { method: 'POST', body: data });
       saveSession(session);
-      navigate(session.role === 'ROLE_RESIDENT' ? '/repairs' : '/rooms');
+      navigate({ ROLE_ADMIN: '/admin', ROLE_MANAGER: '/rooms', ROLE_RESIDENT: '/cabinet' }[session.role]);
       location.reload();
     } catch (e) {
       container.querySelector('#error').textContent = e.message;
