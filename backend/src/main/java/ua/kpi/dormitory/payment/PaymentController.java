@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,7 +56,10 @@ public class PaymentController {
     @PreAuthorize("hasAnyAuthority('ROLE_RESIDENT','ROLE_MANAGER')")
     public ResponseEntity<Resource> receipt(@PathVariable Long id) {
         Resource file = service.receipt(CurrentUser.get(), id);
+        // тип за розширенням файлу (.pdf, .jpg, .png), інакше браузер покаже PDF як текст
+        MediaType type = MediaTypeFactory.getMediaType(file).orElse(MediaType.APPLICATION_OCTET_STREAM);
         return ResponseEntity.ok()
+                .contentType(type)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
                 .header("X-Content-Type-Options", "nosniff")
                 .body(file);
