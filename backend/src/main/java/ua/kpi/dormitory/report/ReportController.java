@@ -1,5 +1,8 @@
 package ua.kpi.dormitory.report;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ua.kpi.dormitory.security.CurrentUser;
@@ -23,5 +26,17 @@ public class ReportController {
     @GetMapping("/free-beds")
     public List<Map<String, Object>> freeBeds(@RequestParam Long dormitoryId) {
         return service.freeBeds(CurrentUser.get(), dormitoryId);
+    }
+
+    /** Експорт: GET /api/reports/residents/export?dormitoryId=1&format=xlsx|pdf */
+    @GetMapping("/{type}/export")
+    public ResponseEntity<byte[]> export(@PathVariable String type, @RequestParam Long dormitoryId,
+                                         @RequestParam(defaultValue = "xlsx") String format) {
+        ReportExporter exporter = service.exporter(format);
+        ReportTable table = service.table(CurrentUser.get(), dormitoryId, type);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(exporter.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + type + "." + exporter.format() + "\"")
+                .body(exporter.export(table));
     }
 }
