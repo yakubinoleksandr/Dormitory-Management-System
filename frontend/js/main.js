@@ -24,7 +24,7 @@ const ROLE_LABELS = {
 
 const ROUTES = [
   { path: '/admin',         label: 'Конфігурація',     icon: 'fa-solid fa-sliders',           render: renderAdmin,         roles: [ADMIN] },
-  { path: '/rooms',         label: 'Номерний фонд',    icon: 'fa-solid fa-border-all',        render: renderRooms,         roles: [ADMIN, MANAGER, RESIDENT] },
+  { path: '/rooms',         label: 'Номерний фонд',    icon: 'fa-solid fa-border-all',        render: renderRooms,         roles: [ADMIN, MANAGER] },
   { path: '/applications',  label: 'Заяви на поселення', icon: 'fa-solid fa-file-signature',  render: renderApplications,  roles: [MANAGER] },
   { path: '/cabinet',       label: 'Мій кабінет',      icon: 'fa-solid fa-user',              render: renderCabinet,       roles: [RESIDENT] },
   { path: '/repairs',       label: 'Заявки на ремонт', icon: 'fa-solid fa-wrench',            render: renderRepairs,       roles: [MANAGER, RESIDENT] },
@@ -66,17 +66,17 @@ function updateLayout() {
   roleBadge.innerHTML = `<i class="fa-solid fa-user-shield text-blue-600"></i><span>Роль: ${ROLE_LABELS[role] ?? role}</span>`;
 
   nav.innerHTML = ROUTES.filter((r) => r.roles.includes(role))
-    .map((r) => {
-      const isActive = r.path === currentPath;
-      const cls = isActive
-        ? 'bg-blue-600 text-white shadow-md'
-        : 'text-slate-300 hover:bg-slate-800 hover:text-white';
-      return `<a href="#${r.path}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${cls}">
+      .map((r) => {
+        const isActive = r.path === currentPath;
+        const cls = isActive
+            ? 'bg-blue-600 text-white shadow-md'
+            : 'text-slate-300 hover:bg-slate-800 hover:text-white';
+        return `<a href="#${r.path}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${cls}">
         <i class="${r.icon} w-5 text-center"></i>
         <span>${r.label}</span>
       </a>`;
-    })
-    .join('');
+      })
+      .join('');
 }
 
 document.getElementById('logout').addEventListener('click', async () => {
@@ -93,7 +93,11 @@ window.addEventListener('hashchange', () => {
 });
 
 updateLayout();
-if (getRole() && (!location.hash || location.hash === '#/login')) {
+// Якщо адреса порожня, це екран входу або сторінка, недоступна цій ролі (наприклад, старе #/rooms у мешканця),
+// відкриваємо домашню сторінку ролі
+const currentRoute = ROUTES.find((r) => r.path === location.hash.slice(1));
+const isAllowed = currentRoute ? currentRoute.roles.includes(getRole()) : false;
+if (getRole() && (!location.hash || location.hash === '#/login' || !isAllowed)) {
   navigate(HOME[getRole()]);
 } else {
   renderCurrent(app);
