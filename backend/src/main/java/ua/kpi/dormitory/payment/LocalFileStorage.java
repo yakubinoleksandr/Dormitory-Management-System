@@ -1,6 +1,8 @@
 package ua.kpi.dormitory.payment;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ua.kpi.dormitory.common.ApiException;
@@ -44,5 +46,14 @@ public class LocalFileStorage implements FileStorage {
         } catch (IOException ignored) {
             // файл без запису в БД не критичний; очищується обслуговуванням
         }
+    }
+
+    @Override
+    public Resource load(String relativePath) {
+        Path file = root.resolve(relativePath).normalize();
+        if (!file.startsWith(root) || !Files.isReadable(file)) {
+            throw ApiException.notFound("Файл квитанції не знайдено");
+        }
+        return new FileSystemResource(file);
     }
 }
