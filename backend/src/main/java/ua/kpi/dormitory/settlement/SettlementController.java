@@ -53,4 +53,24 @@ public class SettlementController {
     public SettlementDtos.SettlementResponse changeBed(@PathVariable Long id, @Valid @RequestBody ChangeBedRequest request) {
         return settlementService.changeBed(CurrentUser.get(), id, request.bedId());
     }
+
+    @GetMapping("/settlement-applications")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public List<ApplicationRow> applications(@RequestParam Long dormitoryId,
+                                             @RequestParam(defaultValue = "PENDING") ApplicationStatus status) {
+        return applicationService.forDormitory(CurrentUser.get(), dormitoryId, status);
+    }
+
+    @PatchMapping("/settlement-applications/{id}/reject")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public SettlementDtos.ApplicationResponse reject(@PathVariable Long id) {
+        return settlementService.reject(CurrentUser.get(), id);
+    }
+
+    @PatchMapping("/settlements/{id}")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public SettlementDtos.SettlementResponse updateTerms(@PathVariable Long id,
+                                                         @Valid @RequestBody SettlementDtos.UpdateTermsRequest request) {
+        return settlementService.updateTerms(CurrentUser.get(), id, request);
+    }
 }
