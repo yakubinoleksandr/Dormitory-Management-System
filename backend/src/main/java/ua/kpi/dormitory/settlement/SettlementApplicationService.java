@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.kpi.dormitory.account.AccountRepository;
 import ua.kpi.dormitory.common.ApiException;
 import ua.kpi.dormitory.inventory.DormitoryRepository;
+import ua.kpi.dormitory.security.AccessPolicy;
 import ua.kpi.dormitory.security.AuthenticatedUser;
 
 import java.time.LocalDateTime;
@@ -16,9 +17,11 @@ public class SettlementApplicationService {
     private final SettlementApplicationRepository applications;
     private final AccountRepository accounts;
     private final DormitoryRepository dormitories;
+    private final AccessPolicy access;
 
     public SettlementApplicationService(SettlementApplicationRepository applications, AccountRepository accounts,
-                                        DormitoryRepository dormitories) {
+                                        DormitoryRepository dormitories, AccessPolicy access) {
+        this.access = access;
         this.applications = applications;
         this.accounts = accounts;
         this.dormitories = dormitories;
@@ -44,5 +47,11 @@ public class SettlementApplicationService {
         return applications.findByResidentAccountIdOrderByCreatedAtDesc(user.id()).stream()
                 .map(a -> new SettlementDtos.ApplicationResponse(a.getId(), a.getDormitory().getId(), a.getStatus()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ApplicationRow> forDormitory(AuthenticatedUser manager, Long dormitoryId, ApplicationStatus status) {
+        access.requireManagerOf(manager, dormitoryId);
+        return applications.findRows(dormitoryId, status);
     }
 }
