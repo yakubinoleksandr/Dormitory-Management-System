@@ -21,4 +21,12 @@ public interface SettlementApplicationRepository extends JpaRepository<Settlemen
     /** Скалярний запит для визначення власника заяви до блокування. */
     @Query("select a.residentAccount.id from SettlementApplication a where a.id = :id")
     Optional<Long> findResidentIdById(@Param("id") Long id);
+
+    @Query("""
+            select new ua.kpi.dormitory.settlement.ApplicationRow(a.id, a.residentAccount.id, p.fullName, a.status, a.createdAt)
+            from SettlementApplication a
+              join ua.kpi.dormitory.profile.ResidentProfile p on p.account = a.residentAccount
+            where a.dormitory.id = :dormitoryId and a.status = :status
+            order by a.createdAt""")
+    List<ApplicationRow> findRows(@Param("dormitoryId") Long dormitoryId, @Param("status") ApplicationStatus status);
 }

@@ -23,4 +23,6 @@ public final class SettlementDtos {
     public record SettlementResponse(Long id, Long applicationId, Long residentAccountId, Long bedId,
                                      String contractNumber, LocalDate startDate, LocalDate endDate,
                                      SettlementStatus status) { }
+
+    public record UpdateTermsRequest(@NotNull LocalDate startDate, @NotNull LocalDate endDate) { }
 }
