@@ -7,15 +7,21 @@ export function esc(text) {
   return div.innerHTML;
 }
 
-export const BTN = 'bg-slate-800 text-white rounded px-4 py-2 text-sm hover:bg-slate-700';
-export const INPUT = 'border rounded px-3 py-2 w-full text-sm';
-export const CARD = 'bg-white p-4 rounded shadow';
+export const BTN = 'bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer';
+export const INPUT = 'border border-slate-300 rounded-lg px-3 py-2 w-full text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white transition-all';
+export const CARD = 'bg-white p-5 rounded-xl shadow-sm border border-slate-200';
 
 export function showMessage(container, text, ok = false) {
   const box = container.querySelector('[data-msg]');
   if (!box) return;
-  box.textContent = text;
-  box.className = `text-sm ${ok ? 'text-green-700' : 'text-red-600'}`;
+  if (!text) {
+    box.className = 'hidden';
+    return;
+  }
+  box.innerHTML = `<i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-exclamation'} mr-1.5"></i>${esc(text)}`;
+  box.className = `text-sm px-4 py-2.5 rounded-lg mb-4 font-medium border ${
+    ok ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
+  }`;
 }
 
 export async function withMessage(container, action, okText) {
@@ -33,13 +39,15 @@ export async function withMessage(container, action, okText) {
 export async function dormitorySelect(container, onChange) {
   const holder = container.querySelector('[data-dorm]');
   const dorms = await api('/dormitories');
-  holder.innerHTML = `<select class="${INPUT}">
-    ${dorms.map((d) => `<option value="${d.id}">${esc(d.nameOrNumber)} (${d.layoutType === 'BLOCK' ? 'блочний' : 'коридорний'})</option>`).join('')}
-  </select>`;
+  holder.innerHTML = `
+    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Гуртожиток</label>
+    <select class="${INPUT}">
+      ${dorms.map((d) => `<option value="${d.id}">${esc(d.nameOrNumber)} (${d.layoutType === 'BLOCK' ? 'блочний' : 'коридорний'})</option>`).join('')}
+    </select>`;
   const select = holder.querySelector('select');
   select.addEventListener('change', () => onChange(Number(select.value)));
   if (dorms.length) onChange(Number(select.value));
-  else holder.innerHTML = '<p class="text-sm text-slate-500">Немає доступних гуртожитків</p>';
+  else holder.innerHTML = '<p class="text-sm text-slate-500 bg-slate-100 p-2.5 rounded-lg">Немає доступних гуртожитків</p>';
   return dorms;
 }
 
