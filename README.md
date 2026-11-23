@@ -43,7 +43,7 @@
 ├── backup/                      backup.sh (щодня о 03:00), restore.sh
 ├── nginx/default.conf
 ├── docker-compose.yml           db + backend + backup + web
-├── docs/                        git-workflow, requirements-traceability, performance-check, postman/
+├── docs/                        git-workflow, requirements-traceability
 ├── scripts/                     smoke_test.py, setup-branches.sh
 ├── .env.example
 └── README.md
