@@ -45,4 +45,16 @@ public class InventoryController {
         access.requireCanView(CurrentUser.get(), id);
         return queryService.map(id, floor);
     }
+
+    @GetMapping
+    public List<InventoryDtos.DormitoryResponse> list() {
+        return dormitoryService.list(CurrentUser.get());
+    }
+
+    @GetMapping("/{id}/rooms/{roomId}/beds")
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    public List<InventoryDtos.BedResponse> beds(@PathVariable Long id, @PathVariable Long roomId) {
+        access.requireManagerOf(CurrentUser.get(), id);
+        return queryService.beds(id, roomId);
+    }
 }

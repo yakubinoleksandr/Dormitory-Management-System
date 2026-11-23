@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/** FR-04/FR-05: карта номерного фонду з колірним статусом (звичайне читання без блокувань). */
+/** FR-04/FR-05: карта номерного фонду з колірним статусом; один запит замість запиту на кожну кімнату (NFR-01). */
 @Service
 public class RoomQueryService {
     private final RoomRepository rooms;
@@ -18,12 +18,19 @@ public class RoomQueryService {
 
     @Transactional(readOnly = true)
     public List<InventoryDtos.RoomResponse> map(Long dormitoryId, Integer floor) {
-        List<Room> list = floor == null
-                ? rooms.findByDormitoryIdOrderByFloorAscRoomNumberAsc(dormitoryId)
-                : rooms.findByDormitoryIdAndFloorOrderByRoomNumberAsc(dormitoryId, floor);
-        // TODO(NFR-01): замінити на один агрегований запит замість count на кожну кімнату.
-        return list.stream().map(r -> new InventoryDtos.RoomResponse(
-                r.getId(), r.getFloor(), r.getRoomNumber(), r.getBlockName(), r.getCapacity(), r.getStatus(),
-                r.getCapacity() - beds.countByRoomIdAndOccupiedTrue(r.getId()))).toList();
+        return rooms.mapRows(dormitoryId, floor).stream().map(row -> {
+            int capacity = ((Number) row[4]).intValue();
+            long occupied = ((Number) row[6]).longValue();
+            return new InventoryDtos.RoomResponse(((Number) row[0]).longValue(), ((Number) row[1]).intValue(),
+                    (String) row[2], (String) row[3], capacity, (RoomStatus) row[5], capacity - occupied);
+        }).toList();
+    }
+
+    /** Ліжка кімнати для вибору місця під час поселення (лише для завідуючої; перевірка в контролері). */
+    @Transactional(readOnly = true)
+    public List<InventoryDtos.BedResponse> beds(Long dormitoryId, Long roomId) {
+        return beds.findByRoomIdOrderByBedNumber(roomId).stream()
+                .filter(b -> b.getRoom().getDormitory().getId().equals(dormitoryId))
+                .map(b -> new InventoryDtos.BedResponse(b.getId(), b.getBedNumber(), b.isOccupied())).toList();
     }
 }
